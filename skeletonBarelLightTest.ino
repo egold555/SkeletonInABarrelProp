@@ -24,7 +24,7 @@ void changeRedWhiteLights();
 void changeGreenLights();
 void animation_standby();
 
-Ticker tickerUpdateRedWhiteLights(changeRedWhiteLights, 50);
+Ticker tickerUpdateRedWhiteLights(changeRedWhiteLights, 100);
 Ticker tickerUpdateGreenLights(changeGreenLights, 20);
 Ticker tickerResetToStandby(animation_standby, 13000);
 
@@ -97,6 +97,9 @@ void animation_standby() {
 
 int redState = false;
 void animation_popup() {
+  const int bounceDelayUp = 300;
+  const int bounceDelayDown = 100;
+  
   tickerUpdateRedWhiteLights.start();
   tickerUpdateGreenLights.stop();
   tickerResetToStandby.start();
@@ -104,16 +107,16 @@ void animation_popup() {
   playAudio(AUDIO_SCREAM);
 
   digitalWrite(PIN_RELAY_CYLINDER_MAN, LOW);
-  delayWithTicker(2000);
+  delayWithTicker(1000);
 
 
-  for (int i = 0; i < 10 ; i++) {
+  for (int i = 0; i < 10000 / (bounceDelayUp + bounceDelayDown) ; i++) {
 
     digitalWrite(PIN_RELAY_CYLINDER_MAN, HIGH);
-    delayWithTicker(500);
+    delayWithTicker(bounceDelayDown);
 
     digitalWrite(PIN_RELAY_CYLINDER_MAN, LOW);
-    delayWithTicker(500);
+    delayWithTicker(bounceDelayUp);
   }
 
   digitalWrite(PIN_RELAY_CYLINDER_MAN, HIGH);
