@@ -14,6 +14,9 @@
 #define AUDIO_BOOT 1
 #define AUDIO_SCREAM 2
 
+#define SKELETON_UP HIGH
+#define SKELETON_DOWN LOW
+
 CRGB leds[NUM_LEDS];
 
 Bounce inputTrigger;
@@ -50,7 +53,7 @@ void setup() {
 
   pinMode(PIN_RELAY_CYLINDER_MAN, OUTPUT);
   // Turn relays OFF (HIGH)
-  digitalWrite(PIN_RELAY_CYLINDER_MAN, HIGH);
+  digitalWrite(PIN_RELAY_CYLINDER_MAN, SKELETON_DOWN);
 
   pinMode(PIN_TRIGGER_BUTTON, INPUT_PULLUP);
   inputTrigger.attach(PIN_TRIGGER_BUTTON);
@@ -92,7 +95,7 @@ void animation_standby() {
   tickerUpdateGreenLights.start();
   tickerResetToStandby.stop();
 
-  digitalWrite(PIN_RELAY_CYLINDER_MAN, HIGH);
+  digitalWrite(PIN_RELAY_CYLINDER_MAN, SKELETON_DOWN);
 }
 
 int redState = false;
@@ -106,20 +109,20 @@ void animation_popup() {
 
   playAudio(AUDIO_SCREAM);
 
-  digitalWrite(PIN_RELAY_CYLINDER_MAN, LOW);
+  digitalWrite(PIN_RELAY_CYLINDER_MAN, SKELETON_UP);
   delayWithTicker(1000);
 
 
   for (int i = 0; i < 10000 / (bounceDelayUp + bounceDelayDown) ; i++) {
 
-    digitalWrite(PIN_RELAY_CYLINDER_MAN, HIGH);
+    digitalWrite(PIN_RELAY_CYLINDER_MAN, SKELETON_DOWN);
     delayWithTicker(bounceDelayDown);
 
-    digitalWrite(PIN_RELAY_CYLINDER_MAN, LOW);
+    digitalWrite(PIN_RELAY_CYLINDER_MAN, SKELETON_UP);
     delayWithTicker(bounceDelayUp);
   }
 
-  digitalWrite(PIN_RELAY_CYLINDER_MAN, HIGH);
+  digitalWrite(PIN_RELAY_CYLINDER_MAN, SKELETON_DOWN);
 }
 
 void changeRedWhiteLights() {
