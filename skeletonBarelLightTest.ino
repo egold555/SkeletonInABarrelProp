@@ -72,6 +72,7 @@ void loop () {
   while (Serial.available() > 0) {
     int got = Serial.read();
     if (got == 'x') {
+      Serial.println("Running...");
       isTriggered = true;
     }
   }
@@ -102,6 +103,7 @@ int redState = false;
 void animation_popup() {
   const int bounceDelayUp = 300;
   const int bounceDelayDown = 100;
+  const int totalBounceTime = 10000;
   
   tickerUpdateRedWhiteLights.start();
   tickerUpdateGreenLights.stop();
@@ -110,17 +112,16 @@ void animation_popup() {
   playAudio(AUDIO_SCREAM);
 
   digitalWrite(PIN_RELAY_CYLINDER_MAN, SKELETON_UP);
-  delayWithTicker(1000);
+  delayWithTicker(500);
 
-
-  for (int i = 0; i < 10000 / (bounceDelayUp + bounceDelayDown) ; i++) {
-
+  long startUpDownTime = millis();
+  do {
     digitalWrite(PIN_RELAY_CYLINDER_MAN, SKELETON_DOWN);
-    delayWithTicker(bounceDelayDown);
+    delayWithTicker(bounceDelayDown + randomNumberBetween(0, 30));
 
     digitalWrite(PIN_RELAY_CYLINDER_MAN, SKELETON_UP);
-    delayWithTicker(bounceDelayUp);
-  }
+    delayWithTicker(bounceDelayUp + randomNumberBetween(0, 100));
+  } while (millis() < startUpDownTime + totalBounceTime);
 
   digitalWrite(PIN_RELAY_CYLINDER_MAN, SKELETON_DOWN);
 }
