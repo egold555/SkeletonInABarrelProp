@@ -59,7 +59,7 @@ void setup() {
   inputTrigger.attach(PIN_TRIGGER_BUTTON);
 
   Serial.begin(9600);
-  Serial.println("Hello World");
+  Serial.println(F("Hello World"));
 
 
 
@@ -72,14 +72,17 @@ void loop () {
   while (Serial.available() > 0) {
     int got = Serial.read();
     if (got == 'x') {
-      Serial.println("Running...");
+      //Serial.println(F("Running..."_);
       isTriggered = true;
     }
   }
 
-  //inputTrigger.update();
+  inputTrigger.update();
 
-  //if (inputTrigger.fell()) {
+  if (inputTrigger.fell()) {
+      isTriggered = true;
+      //Serial.println(F("Running..."_);
+  }
   if (isTriggered) {
     // The button is pressed.
     animation_popup();
