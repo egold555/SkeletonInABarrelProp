@@ -48,7 +48,7 @@ void setup() {
 
   setupAudio(PIN_AUDIO_RX, PIN_AUDIO_TX);
   LEDS.addLeds<WS2811, PIN_LEDS>(leds, NUM_LEDS);
-  randomSeed(analogRead(0) + 37 * analogRead(1)); //Set the seed to a floating point number because random() gives same set of numbers on every bootup cause the arduino has no clock
+  randomSeed(analogRead(A0) + 37 * analogRead(A1)); //Set the seed to a floating point number because random() gives same set of numbers on every bootup cause the arduino has no clock
 
 
   pinMode(PIN_RELAY_CYLINDER_MAN, OUTPUT);
@@ -115,7 +115,7 @@ void animation_popup() {
   playAudio(AUDIO_SCREAM);
 
   digitalWrite(PIN_RELAY_CYLINDER_MAN, SKELETON_UP);
-  delayWithTicker(500);
+  delayWithTicker(800);
 
   long startUpDownTime = millis();
   do {
