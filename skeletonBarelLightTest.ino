@@ -7,15 +7,21 @@
 
 #define PIN_TRIGGER_BUTTON 4
 #define PIN_LEDS 6
-#define PIN_RELAY_CYLINDER_MAN 8
+#define PIN_RELAY_CYLINDER_MAN 9
+#define PIN_RELAY_SMOKE 8
 #define PIN_AUDIO_RX 10
 #define PIN_AUDIO_TX 12
 
 #define AUDIO_BOOT 1
-#define AUDIO_SCREAM 2
+#define AUDIO_SCREAM 3
 
-#define SKELETON_UP HIGH
-#define SKELETON_DOWN LOW
+#define SKELETON_UP LOW
+#define SKELETON_DOWN HIGH
+
+#define SMOKE_ON_MS 6000
+#define SMOKE_OFF_MS 22000
+#define SMOKE_ON_VALUE LOW
+#define SMOKE_OFF_VALUE HIGH
 
 CRGB leds[NUM_LEDS];
 
@@ -26,10 +32,14 @@ bool isTriggered = false;
 void changeRedWhiteLights();
 void changeGreenLights();
 void animation_standby();
+void turn_smoke_on();
+void turn_smoke_off();
 
 Ticker tickerUpdateRedWhiteLights(changeRedWhiteLights, 100);
 Ticker tickerUpdateGreenLights(changeGreenLights, 20);
-Ticker tickerResetToStandby(animation_standby, 13000);
+Ticker tickerResetToStandby(animation_standby, 3500);
+Ticker tickerSmokeOff(turn_smoke_on, SMOKE_OFF_MS);
+Ticker tickerSmokeOn(turn_smoke_off, SMOKE_ON_MS);
 
 void delayWithTicker(int mils)
 {
@@ -38,6 +48,8 @@ void delayWithTicker(int mils)
     tickerUpdateRedWhiteLights.update();
     tickerUpdateGreenLights.update();
     tickerResetToStandby.update();
+    tickerSmokeOn.update();
+    tickerSmokeOff.update();
   }
 }
 
@@ -45,13 +57,16 @@ void setup() {
   tickerUpdateRedWhiteLights.stop();
   tickerUpdateGreenLights.start();
   tickerResetToStandby.stop();
-
+  
   setupAudio(PIN_AUDIO_RX, PIN_AUDIO_TX);
   LEDS.addLeds<WS2811, PIN_LEDS>(leds, NUM_LEDS);
   randomSeed(analogRead(A0) + 37 * analogRead(A1)); //Set the seed to a floating point number because random() gives same set of numbers on every bootup cause the arduino has no clock
 
 
   pinMode(PIN_RELAY_CYLINDER_MAN, OUTPUT);
+  pinMode(PIN_RELAY_SMOKE, OUTPUT);
+  turn_smoke_off();
+
   // Turn relays OFF (HIGH)
   digitalWrite(PIN_RELAY_CYLINDER_MAN, SKELETON_DOWN);
 
@@ -92,6 +107,8 @@ void loop () {
   tickerUpdateRedWhiteLights.update();
   tickerUpdateGreenLights.update();
   tickerResetToStandby.update();
+  tickerSmokeOn.update();
+  tickerSmokeOff.update();
 }
 
 void animation_standby() {
@@ -104,27 +121,18 @@ void animation_standby() {
 
 int redState = false;
 void animation_popup() {
-  const int bounceDelayUp = 300;
-  const int bounceDelayDown = 100;
-  const int totalBounceTime = 10000;
   
+  digitalWrite(PIN_RELAY_CYLINDER_MAN, SKELETON_UP);
+
+  delayWithTicker(500);
+
+  playAudio(AUDIO_SCREAM);
+
   tickerUpdateRedWhiteLights.start();
   tickerUpdateGreenLights.stop();
   tickerResetToStandby.start();
 
-  playAudio(AUDIO_SCREAM);
-
-  digitalWrite(PIN_RELAY_CYLINDER_MAN, SKELETON_UP);
-  delayWithTicker(800);
-
-  long startUpDownTime = millis();
-  do {
-    digitalWrite(PIN_RELAY_CYLINDER_MAN, SKELETON_DOWN);
-    delayWithTicker(bounceDelayDown + randomNumberBetween(0, 30));
-
-    digitalWrite(PIN_RELAY_CYLINDER_MAN, SKELETON_UP);
-    delayWithTicker(bounceDelayUp + randomNumberBetween(0, 100));
-  } while (millis() < startUpDownTime + totalBounceTime);
+  delayWithTicker(3000);
 
   digitalWrite(PIN_RELAY_CYLINDER_MAN, SKELETON_DOWN);
 }
@@ -148,7 +156,7 @@ void changeRedWhiteLights() {
 
 void changeGreenLights()
 {
-  leds[random(NUM_LEDS)] = getRandColor(80, 100, 128, 255);
+  leds[random(NUM_LEDS)] = getRandColor(60, 150, 128, 255);
 
   //Fade all leds every loop
   for (int i = 0; i < NUM_LEDS; i++) {
@@ -156,6 +164,20 @@ void changeGreenLights()
   }
 
   LEDS.show();
+}
+
+void turn_smoke_on()
+{
+  digitalWrite(PIN_RELAY_SMOKE, SMOKE_ON_VALUE);
+  tickerSmokeOff.stop();
+  tickerSmokeOn.start();
+}
+
+void turn_smoke_off()
+{
+  digitalWrite(PIN_RELAY_SMOKE, SMOKE_OFF_VALUE);
+  tickerSmokeOn.stop();
+  tickerSmokeOff.start();
 }
 
 CHSV getRandColor(int minColor, int maxColor, int minValue, int maxValue) {
